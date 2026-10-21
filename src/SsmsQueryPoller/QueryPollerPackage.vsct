@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+  <Include href="KnownImageIds.vsct" />
+
+  <Commands package="guidQueryPollerPackage">
+    <Groups>
+      <Group guid="guidQueryPollerCmdSet" id="ToolsMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidQueryPollerCmdSet" id="ShowQueryPollerCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidQueryPollerCmdSet" id="ToolsMenuGroup" />
+        <Icon guid="ImageCatalogGuid" id="Refresh" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <Strings>
+          <ButtonText>Query &amp;Poller</ButtonText>
+          <CommandName>QueryPoller.Show</CommandName>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <CommandPlacements>
+    <CommandPlacement guid="guidQueryPollerCmdSet" id="ShowQueryPollerCommandId" priority="0x0100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+    </CommandPlacement>
+  </CommandPlacements>
+
+  <Symbols>
+    <GuidSymbol name="guidQueryPollerPackage" value="{362889d2-5c2e-42be-9ad2-8049a72ac586}" />
+    <GuidSymbol name="guidQueryPollerCmdSet" value="{5fa4fc59-4523-4f08-954c-bf0564f42943}">
+      <IDSymbol name="ToolsMenuGroup" value="0x1020" />
+      <IDSymbol name="ShowQueryPollerCommandId" value="0x0100" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
