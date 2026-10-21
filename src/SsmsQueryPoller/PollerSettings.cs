@@ -15,7 +15,7 @@ namespace SsmsQueryPoller
 
         public int TimeoutSeconds { get; set; } = 30;
 
-        public int AutoStopUnchangedSeconds { get; set; }
+        public int AutoStopUnchangedSeconds { get; set; } = 30;
 
         public bool StopOnError { get; set; }
 

@@ -14,7 +14,7 @@ namespace SsmsQueryPoller
 
         private int _intervalSeconds = 5;
         private int _maxRuns;
-        private int _stopWhenUnchangedSeconds;
+        private int _stopWhenUnchangedSeconds = 30;
 
         [Category("Execute with Polling")]
         [DisplayName("Interval (seconds)")]
@@ -45,7 +45,7 @@ namespace SsmsQueryPoller
         [Category("Execute with Polling")]
         [DisplayName("Stop when results unchanged for (seconds)")]
         [Description("Stop polling once the grid results have stayed identical for this many seconds, e.g. when waiting for a job or blocking to clear. Requires Results to Grid. 0 = never.")]
-        [DefaultValue(0)]
+        [DefaultValue(30)]
         public int StopWhenUnchangedSeconds
         {
             get => _stopWhenUnchangedSeconds;

@@ -25,7 +25,7 @@ Settings (**Tools → Options → Query Poller → Execute with Polling**), appl
 - **Interval (seconds)** — start-to-start, minimum 1 (default 5). Runs never overlap.
 - **Stop on error** — stop when a run finishes with an error (default off).
 - **Maximum runs** — stop after this many runs; 0 = until stopped (default 0).
-- **Stop when results unchanged for (seconds)** — stop once the grid results have stayed identical for this long, e.g. when waiting for a job or blocking to clear; 0 = never (default 0). See [Auto-stop on unchanged results](#auto-stop-on-unchanged-results).
+- **Stop when results unchanged for (seconds)** — stop once the grid results have stayed identical for this long, e.g. when waiting for a job or blocking to clear; 0 = never (default 30). See [Auto-stop on unchanged results](#auto-stop-on-unchanged-results).
 
 Polling also stops when you press SSMS's **Cancel Executing Query**, close or disconnect the window, or if a run can't start. Stopping doesn't cancel a run that's already in progress.
 
@@ -40,7 +40,7 @@ To make sure each run executes the same text:
 
 - **Connection from:** pick any connected query window. The poller opens its *own* connection with the same server, login, auth method (Windows, SQL, all Microsoft Entra ID modes), encryption and advanced options — your query window's session is never touched.
 - **Copy query from window** copies the selected text (or the whole script if nothing is selected).
-- Interval in seconds, command timeout, **Auto-stop after N sec unchanged** (0 = never), optional **Stop on error**, **Start/Stop** and **Run now**.
+- Interval in seconds, command timeout, **Auto-stop after N sec unchanged** (default 30, 0 = never), optional **Stop on error**, **Start/Stop** and **Run now**.
 - Polls never overlap; the interval is measured start-to-start.
 - Scripts can contain `GO` / `GO n` batch separators and return multiple result sets (pick one from the *Result set* dropdown).
 - Sort order and scroll position are kept between refreshes when the result shape doesn't change.

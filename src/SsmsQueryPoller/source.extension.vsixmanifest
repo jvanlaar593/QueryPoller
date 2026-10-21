@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="SsmsQueryPoller.362889d2-5c2e-42be-9ad2-8049a72ac586" Version="1.1.0" Language="en-US" Publisher="SsmsQueryPoller" />
+    <Identity Id="SsmsQueryPoller.362889d2-5c2e-42be-9ad2-8049a72ac586" Version="1.2.0" Language="en-US" Publisher="SsmsQueryPoller" />
     <DisplayName>Query Poller</DisplayName>
     <Description xml:space="preserve">Re-runs a T-SQL query every N seconds against a query window's connection and shows the latest results in a dockable tool window.</Description>
     <License>LICENSE.txt</License>

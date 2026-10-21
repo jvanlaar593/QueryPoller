@@ -8,7 +8,7 @@ using Task = System.Threading.Tasks.Task;
 namespace SsmsQueryPoller
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("Query Poller", "Re-runs a query every N seconds and shows the latest results.", "1.1.0")]
+    [InstalledProductRegistration("Query Poller", "Re-runs a query every N seconds and shows the latest results.", "1.2.0")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(QueryPollerToolWindow), Style = VsDockStyle.Tabbed, Window = "34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3")]
     [ProvideOptionPage(typeof(PollingOptionsPage), "Query Poller", "Execute with Polling", 0, 0, true)]
