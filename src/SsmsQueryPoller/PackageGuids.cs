@@ -14,5 +14,6 @@ namespace SsmsQueryPoller
     internal static class PackageIds
     {
         public const int ShowQueryPollerCommandId = 0x0100;
+        public const int ExecuteWithPollingCommandId = 0x0200;
     }
 }

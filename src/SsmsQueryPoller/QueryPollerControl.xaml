@@ -70,6 +70,13 @@
                          Style="{DynamicResource {x:Static vsshell:VsResourceKeys.TextBoxStyleKey}}" />
                 <TextBlock Style="{StaticResource FieldLabel}" Margin="4,0,0,0" Text="sec" />
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,2,12,2">
+                <TextBlock Style="{StaticResource FieldLabel}" Text="Auto-stop after" />
+                <TextBox x:Name="AutoStopBox" Width="48" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
+                         ToolTip="Stop polling once the results have stayed identical for this many seconds (0 = never)."
+                         Style="{DynamicResource {x:Static vsshell:VsResourceKeys.TextBoxStyleKey}}" />
+                <TextBlock Style="{StaticResource FieldLabel}" Margin="4,0,0,0" Text="sec unchanged" />
+            </StackPanel>
             <CheckBox x:Name="StopOnErrorCheck" Margin="0,2,12,2" VerticalAlignment="Center" Content="Stop on error"
                       Foreground="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTextKey}}"
                       Style="{DynamicResource {x:Static vsshell:VsResourceKeys.CheckBoxStyleKey}}" />

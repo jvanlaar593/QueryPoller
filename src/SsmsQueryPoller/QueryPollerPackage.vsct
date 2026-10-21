@@ -10,6 +10,16 @@
       <Group guid="guidQueryPollerCmdSet" id="ToolsMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
       </Group>
+
+      <!-- SSMS "SQL Editor" toolbar, right after the Execute/Cancel group. -->
+      <Group guid="guidQueryPollerCmdSet" id="SqlEditorToolbarGroup" priority="0x0301">
+        <Parent guid="guidSsmsQueryEditorGroup" id="IDM_SQLWB_TOOL_QUERY" />
+      </Group>
+
+      <!-- SSMS "Query" menu, right after Execute/Cancel/Parse. -->
+      <Group guid="guidQueryPollerCmdSet" id="QueryMenuGroup" priority="0x0301">
+        <Parent guid="guidSsmsQueryEditorGroup" id="IDM_SQLWB_MENU_QUERY" />
+      </Group>
     </Groups>
 
     <Buttons>
@@ -22,6 +32,19 @@
           <CommandName>QueryPoller.Show</CommandName>
         </Strings>
       </Button>
+
+      <Button guid="guidQueryPollerCmdSet" id="ExecuteWithPollingCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidQueryPollerCmdSet" id="SqlEditorToolbarGroup" />
+        <Icon guid="ImageCatalogGuid" id="Timer" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>IconAndText</CommandFlag>
+        <CommandFlag>TextChanges</CommandFlag>
+        <Strings>
+          <ButtonText>Execute with Polling</ButtonText>
+          <ToolTipText>Re-execute this query window every N seconds (configure in Tools > Options > Query Poller). Click again to stop.</ToolTipText>
+          <CommandName>QueryPoller.ExecuteWithPolling</CommandName>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -29,13 +52,25 @@
     <CommandPlacement guid="guidQueryPollerCmdSet" id="ShowQueryPollerCommandId" priority="0x0100">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
     </CommandPlacement>
+    <CommandPlacement guid="guidQueryPollerCmdSet" id="ExecuteWithPollingCommandId" priority="0x0100">
+      <Parent guid="guidQueryPollerCmdSet" id="QueryMenuGroup" />
+    </CommandPlacement>
   </CommandPlacements>
 
   <Symbols>
     <GuidSymbol name="guidQueryPollerPackage" value="{362889d2-5c2e-42be-9ad2-8049a72ac586}" />
     <GuidSymbol name="guidQueryPollerCmdSet" value="{5fa4fc59-4523-4f08-954c-bf0564f42943}">
       <IDSymbol name="ToolsMenuGroup" value="0x1020" />
+      <IDSymbol name="SqlEditorToolbarGroup" value="0x1030" />
+      <IDSymbol name="QueryMenuGroup" value="0x1040" />
       <IDSymbol name="ShowQueryPollerCommandId" value="0x0100" />
+      <IDSymbol name="ExecuteWithPollingCommandId" value="0x0200" />
+    </GuidSymbol>
+
+    <!-- Defined by SSMS's SQL editor package (SQLEditors.dll). -->
+    <GuidSymbol name="guidSsmsQueryEditorGroup" value="{33f13ac3-80bb-4ecb-85bc-225435603a5e}">
+      <IDSymbol name="IDM_SQLWB_TOOL_QUERY" value="0x0001" />
+      <IDSymbol name="IDM_SQLWB_MENU_QUERY" value="0x0040" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

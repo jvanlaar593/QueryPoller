@@ -34,6 +34,7 @@ namespace SsmsQueryPoller
         private int _executions;
         private int _runCount;
         private int _pollIntervalSeconds;
+        private ResultChangeTracker _changeTracker;
         private DateTime? _nextRunAt;
         private IReadOnlyList<ResultSet> _resultSets = Array.Empty<ResultSet>();
         private string _boundSignature;
@@ -97,6 +98,7 @@ namespace SsmsQueryPoller
             QueryBox.Text = settings.Query;
             IntervalBox.Text = settings.IntervalSeconds.ToString(CultureInfo.CurrentCulture);
             TimeoutBox.Text = settings.TimeoutSeconds.ToString(CultureInfo.CurrentCulture);
+            AutoStopBox.Text = settings.AutoStopUnchangedSeconds.ToString(CultureInfo.CurrentCulture);
             StopOnErrorCheck.IsChecked = settings.StopOnError;
 
             RefreshEditors(selectActiveEditor: true);
@@ -297,6 +299,7 @@ namespace SsmsQueryPoller
             _pollCts = cts;
             _runCount = 0;
             _pollIntervalSeconds = request.IntervalSeconds;
+            _changeTracker = request.AutoStopSeconds > 0 ? new ResultChangeTracker(TimeSpan.FromSeconds(request.AutoStopSeconds)) : null;
             CountdownText.Text = string.Empty;
             _countdownTimer.Start();
             UpdateUiState();
@@ -314,7 +317,7 @@ namespace SsmsQueryPoller
                 while (!token.IsCancellationRequested)
                 {
                     var startedAt = DateTime.UtcNow;
-                    var succeeded = await ExecuteOnceAsync(request, token);
+                    var (succeeded, result) = await ExecuteOnceAsync(request, token);
                     if (token.IsCancellationRequested)
                     {
                         break;
@@ -324,6 +327,16 @@ namespace SsmsQueryPoller
                     {
                         StopPolling("Stopped after error.");
                         break;
+                    }
+
+                    if (_changeTracker != null)
+                    {
+                        // Failed runs have no results to compare, so they restart the unchanged period.
+                        if (_changeTracker.Observe(succeeded ? ResultFingerprint.Compute(result) : null, startedAt))
+                        {
+                            StopPolling($"Stopped: results unchanged for {FormatSeconds(_changeTracker.UnchangedFor)}.");
+                            break;
+                        }
                     }
 
                     // Interval is measured start-to-start; a slow query just shortens the wait (polls never overlap).
@@ -362,8 +375,8 @@ namespace SsmsQueryPoller
             }
         }
 
-        /// <returns>False if the query failed (cancellation counts as success).</returns>
-        private async Task<bool> ExecuteOnceAsync(PollRequest request, CancellationToken token)
+        /// <returns>Succeeded = false if the query failed (cancellation counts as success); Result is null unless the query completed.</returns>
+        private async Task<(bool Succeeded, PollResult Result)> ExecuteOnceAsync(PollRequest request, CancellationToken token)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -379,25 +392,25 @@ namespace SsmsQueryPoller
 
                 if (token.IsCancellationRequested)
                 {
-                    return true;
+                    return (true, null);
                 }
 
                 _runCount++;
                 ShowResults(result);
-                return true;
+                return (true, result);
             }
             catch (Exception) when (token.IsCancellationRequested)
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 SetStatus("Query cancelled.", isError: false);
-                return true;
+                return (true, null);
             }
             catch (Exception ex)
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _runCount++;
                 SetStatus($"Run #{_runCount} failed at {DateTime.Now:T}: {ex.Message}", isError: true);
-                return false;
+                return (false, null);
             }
             finally
             {
@@ -436,8 +449,26 @@ namespace SsmsQueryPoller
                 return false;
             }
 
-            request = new PollRequest(_connection, DatabaseBox.Text.Trim(), QueryBox.Text, interval, timeout, StopOnErrorCheck.IsChecked == true);
+            if (!TryParseAutoStop(out var autoStop))
+            {
+                SetStatus($"Auto-stop must be a whole number of seconds between 0 and {MaxIntervalSeconds} (0 = never).", isError: true);
+                return false;
+            }
+
+            request = new PollRequest(_connection, DatabaseBox.Text.Trim(), QueryBox.Text, interval, timeout, StopOnErrorCheck.IsChecked == true, autoStop);
             return true;
+        }
+
+        private bool TryParseAutoStop(out int seconds)
+        {
+            var text = AutoStopBox.Text.Trim();
+            if (text.Length == 0)
+            {
+                seconds = 0;
+                return true;
+            }
+
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out seconds) && seconds >= 0 && seconds <= MaxIntervalSeconds;
         }
 
         private void SaveSettings()
@@ -458,6 +489,11 @@ namespace SsmsQueryPoller
             if (int.TryParse(TimeoutBox.Text.Trim(), NumberStyles.Integer, CultureInfo.CurrentCulture, out var timeout) && timeout >= 0)
             {
                 settings.TimeoutSeconds = timeout;
+            }
+
+            if (TryParseAutoStop(out var autoStop))
+            {
+                settings.AutoStopUnchangedSeconds = autoStop;
             }
 
             settings.Save();
@@ -636,6 +672,7 @@ namespace SsmsQueryPoller
             DatabaseBox.IsReadOnly = !editable;
             IntervalBox.IsReadOnly = !editable;
             TimeoutBox.IsReadOnly = !editable;
+            AutoStopBox.IsReadOnly = !editable;
             QueryBox.IsReadOnly = !editable;
 
             UpdateCaption();
@@ -650,7 +687,10 @@ namespace SsmsQueryPoller
             else if (IsPolling && _nextRunAt.HasValue)
             {
                 var remaining = Math.Max(0, (int)Math.Ceiling((_nextRunAt.Value - DateTime.UtcNow).TotalSeconds));
-                CountdownText.Text = $"Next run in {remaining}s";
+                var unchanged = _changeTracker != null && _changeTracker.UnchangedFor > TimeSpan.Zero
+                    ? $"  ·  unchanged {FormatSeconds(_changeTracker.UnchangedFor)} of {FormatSeconds(_changeTracker.Threshold)}"
+                    : string.Empty;
+                CountdownText.Text = $"Next run in {remaining}s{unchanged}";
             }
             else if (!IsPolling && CountdownText.Text == "Running…")
             {
@@ -682,6 +722,8 @@ namespace SsmsQueryPoller
                 StatusText.ClearValue(TextBlock.ForegroundProperty);
             }
         }
+
+        private static string FormatSeconds(TimeSpan span) => ((int)Math.Round(span.TotalSeconds)).ToString(CultureInfo.CurrentCulture) + "s";
 
         private static T FindDescendant<T>(DependencyObject root)
             where T : DependencyObject
@@ -728,7 +770,7 @@ namespace SsmsQueryPoller
 
         private sealed class PollRequest
         {
-            public PollRequest(PollConnection connection, string database, string sql, int intervalSeconds, int timeoutSeconds, bool stopOnError)
+            public PollRequest(PollConnection connection, string database, string sql, int intervalSeconds, int timeoutSeconds, bool stopOnError, int autoStopSeconds)
             {
                 Connection = connection;
                 Database = database;
@@ -736,6 +778,7 @@ namespace SsmsQueryPoller
                 IntervalSeconds = intervalSeconds;
                 TimeoutSeconds = timeoutSeconds;
                 StopOnError = stopOnError;
+                AutoStopSeconds = autoStopSeconds;
             }
 
             public PollConnection Connection { get; }
@@ -749,6 +792,9 @@ namespace SsmsQueryPoller
             public int TimeoutSeconds { get; }
 
             public bool StopOnError { get; }
+
+            /// <summary>Stop once results are unchanged for this many seconds; 0 = never.</summary>
+            public int AutoStopSeconds { get; }
         }
     }
 

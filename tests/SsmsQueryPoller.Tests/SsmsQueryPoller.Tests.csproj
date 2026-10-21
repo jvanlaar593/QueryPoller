@@ -9,6 +9,7 @@
   <ItemGroup>
     <!-- QueryExecutor has no VS/SSMS dependencies, so it is compiled directly into the tests. -->
     <Compile Include="..\..\src\SsmsQueryPoller\QueryExecutor.cs" Link="QueryExecutor.cs" />
+    <Compile Include="..\..\src\SsmsQueryPoller\ResultChangeTracker.cs" Link="ResultChangeTracker.cs" />
   </ItemGroup>
 
   <ItemGroup>
